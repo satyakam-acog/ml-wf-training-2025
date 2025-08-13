@@ -1,17 +1,16 @@
-FROM node:20-alpine
+FROM node:22
 
-# Set working directory
 WORKDIR /app
 
-# Copy package files and install dependencies
+# Copy dependency files first (for caching)
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
 # Copy the rest of the project
 COPY . .
 
-# Build the static site
-RUN npm run build
+# Build the static site from inside the quartz folder
+RUN npx quartz build 
 
-# Start Quartz on default port (e.g., 8080) bound to localhost
-CMD ["npm", "run", "serve", "--", "--host", "127.0.0.1", "--port", "8080"]
+# Serve the site (bind to localhost for reverse proxy)
+CMD ["npx", "quartz", "serve", "--hostname", "127.0.0.1", "--port", "8080", "--dir", "quartz"]

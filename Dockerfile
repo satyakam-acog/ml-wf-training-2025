@@ -1,11 +1,17 @@
-FROM node:22-slim AS builder
-WORKDIR /usr/src/app
-COPY package.json .
-COPY package-lock.json* .
+FROM node:20-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files and install dependencies
+COPY package*.json ./
 RUN npm ci
 
-FROM node:22-slim
-WORKDIR /usr/src/app
-COPY --from=builder /usr/src/app/ /usr/src/app/
+# Copy the rest of the project
 COPY . .
-CMD ["npx", "quartz", "build", "--serve"]
+
+# Build the static site
+RUN npm run build
+
+# Start Quartz on default port (e.g., 8080) bound to localhost
+CMD ["npm", "run", "serve", "--", "--host", "127.0.0.1", "--port", "8080"]
